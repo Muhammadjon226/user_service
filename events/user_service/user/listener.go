@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"log"
 
-	pbUser "github.com/Muhammadjon226/user_service/genproto/user_service"
+	"github.com/Muhammadjon226/user_service/models"
 	"github.com/Muhammadjon226/user_service/pkg/logger"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 )
@@ -13,7 +13,7 @@ import (
 func (s *Service) Created(ctx context.Context, event cloudevents.Event) error {
 
 	var (
-		user pbUser.User
+		user models.User
 	)
 
 	s.logger.Debug("User create", logger.Any("event", event))

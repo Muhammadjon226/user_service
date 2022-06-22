@@ -32,9 +32,9 @@ func (c *Service) RegisterConsumers() {
 	adRoute := "v1.user_serivce.user."
 
 	c.kafka.AddConsumer(
-		adRoute+"created", // consumer name
+		adRoute+"created", 	 // consumer name
 		"v1.user.created",   // topic
-		adRoute+"created", // group id
-		c.Created,         // handlerFunction
+		adRoute+"created", 	 // group id
+		c.Created,         	 // handlerFunction
 	)
 }

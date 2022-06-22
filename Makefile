@@ -78,3 +78,7 @@ run-localdb:
 	docker run --name ${POSTGRES_DB} -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} -e POSTGRES_DB=${POSTGRES_DB} -e POSTGRES_USER=${POSTGRES_USER} -p ${POSTGRES_PORT}:5432 --restart always -d postgis/postgis 
 
 .PHONY: vendor
+
+swag-gen:
+	echo ${REGISTRY}
+	swag init -g api/routers.go -o api/docs

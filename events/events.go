@@ -9,7 +9,6 @@ import (
 	"github.com/Muhammadjon226/user_service/events/user_service/user"
 	"github.com/Muhammadjon226/user_service/pkg/event"
 	"github.com/Muhammadjon226/user_service/pkg/logger"
-	grpcClient"github.com/Muhammadjon226/user_service/service/grpcclient"
 )
 
 // PubsubServer ...
@@ -18,11 +17,10 @@ type PubsubServer struct {
 	log   logger.Logger
 	db    *sqlx.DB
 	kafka *event.Kafka
-	newService grpcClient.IServiceManager
 }
 
 // New ...
-func New(cfg config.Config, log logger.Logger, db *sqlx.DB, newSer grpcClient.IServiceManager) (*PubsubServer, error) {
+func New(cfg config.Config, log logger.Logger, db *sqlx.DB) (*PubsubServer, error) {
 
 	kafka, err := event.NewKafka(cfg, log)
 	if err != nil {
@@ -35,7 +33,6 @@ func New(cfg config.Config, log logger.Logger, db *sqlx.DB, newSer grpcClient.IS
 		log:   log,
 		db:    db,
 		kafka: kafka,
-		newService:    newSer,
 	}, nil
 }
 

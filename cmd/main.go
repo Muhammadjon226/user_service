@@ -3,19 +3,15 @@ package main
 import (
 	"context"
 	"fmt"
-	"net"
 	"os"
 
+	"github.com/Muhammadjon226/user_service/api"
 	"github.com/Muhammadjon226/user_service/config"
 	"github.com/Muhammadjon226/user_service/events"
-	pb "github.com/Muhammadjon226/user_service/genproto/user_service"
 	"github.com/Muhammadjon226/user_service/pkg/logger"
 	"github.com/Muhammadjon226/user_service/service"
-	grpcclient "github.com/Muhammadjon226/user_service/service/grpcclient"
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 )
 
 func main() {
@@ -47,36 +43,16 @@ func main() {
 			logger.Error(err))
 		return
 	}
+	defer connDb.Close()
 
-	client, err := grpcclient.New(cfg)
-	if err != nil {
-		log.Error("error while connecting other services")
-		return
-	}
+	userService := service.NewUserService(connDb, log, &cfg )
+	server := api.New(api.Config{
+		Logger:      log,
+		Config:      cfg,
+		UserService: userService,
+	})
 
-	userService := service.NewUserService(connDb, log, client, &cfg)
-
-	lis, err := net.Listen("tcp", cfg.RPCPort)
-	if err != nil {
-		log.Fatal("Error while listening: %v", logger.Error(err))
-	}
-
-	s := grpc.NewServer()
-
-	// err = sentry.Init(sentry.ClientOptions{
-	// 	Dsn: cfg.SentryDNS,
-	// })
-	// if err != nil {
-	// 	log.Fatal("Cannot initialize sentry.io", logger.Error(err))
-	// }
-
-	pb.RegisterUserServiceServer(s, userService)
-
-	reflection.Register(s)
-	log.Info("main: server running",
-		logger.String("port", cfg.RPCPort))
-
-	pubsubServer, err := events.New(cfg, log, connDb, client)
+	pubsubServer, err := events.New(cfg, log, connDb)
 	if err != nil {
 		fmt.Println("errrror in pubsub server")
 		log.Fatal("Error on event server", logger.Error(err))
@@ -89,8 +65,10 @@ func main() {
 
 		}()
 	}
-	if err := s.Serve(lis); err != nil {
-		log.Fatal("Error while listening: %v", logger.Error(err))
+
+	fmt.Println("port: ", cfg.RPCPort)
+	if err := server.Run(cfg.RPCPort); err != nil {
+		log.Fatal("error while running gin server", logger.Error(err))
 	}
 	log.Fatal("API server has finished")
 }
